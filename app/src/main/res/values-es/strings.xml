@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Monopolio electrónico</string>
+
+    <!-- EditTexts -->
+    <string name="host">Host</string>
+    <string name="namePlayer">Nombre jugador</string>
+
+    <!-- ButtonTexts -->
+    <string name="joinButton">Unirse</string>
+    <string name="buyButton">Comprar</string>
+    <string name="payButton">Pagar</string>
+    <string name="repaymentButton">Devolución</string>
+
+    <!-- Info Messages -->
+    <string name="joiningMessage">Uniéndose...</string>
+    <string name="payingMessage">Pagando...</string>
+
+    <!-- Error Messages -->
+    <string name="field_required">Campo es requerido</string>
+    <string name="error">Error</string>
+    <string name="error_joining">Problemas con la conexión con el host</string>
+    <string name="error_not_funds">Sin fondos</string>
+    <string name="error_restart">Lo sentimos, pero tiene que reiniciar la aplicación.</string>
+    <string name="error_sending">Error enviando, intente de nuevo.</string>
+
+    <!-- Constants -->
+    <string name="bank">Banco</string>
+</resources>

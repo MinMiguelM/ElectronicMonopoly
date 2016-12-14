@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">Electronic monopoly</string>
+
+    <!-- EditTexts -->
+    <string name="host">Host</string>
+    <string name="namePlayer">Player name</string>
+
+    <!-- ButtonTexts -->
+    <string name="joinButton">Join</string>
+    <string name="buyButton">Buy</string>
+    <string name="payButton">Pay</string>
+    <string name="repaymentButton">Repayment</string>
+
+    <!-- Info Messages -->
+    <string name="joiningMessage">Joining...</string>
+    <string name="payingMessage">Paying...</string>
+
+    <!-- Error Messages -->
+    <string name="field_required">Field is required</string>
+    <string name="error">Error</string>
+    <string name="error_joining">There was a problem with the connection</string>
+    <string name="error_not_funds">Not funds</string>
+    <string name="error_restart">Sorry, but you have to restart the App.</string>
+    <string name="error_sending">Error sending, try again.</string>
+
+    <!-- Constants -->
+    <string name="bank">Bank</string>
+    <string name="title_activity_gameover">GameoverActivity</string>
+</resources>
