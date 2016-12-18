@@ -25,5 +25,5 @@
 
     <!-- Constants -->
     <string name="bank">Bank</string>
-    <string name="title_activity_gameover">GameoverActivity</string>
+    <string name="everybody">Everybody</string>
 </resources>

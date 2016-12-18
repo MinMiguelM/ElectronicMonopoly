@@ -26,4 +26,5 @@
 
     <!-- Constants -->
     <string name="bank">Banco</string>
+    <string name="everybody">Todos</string>
 </resources>

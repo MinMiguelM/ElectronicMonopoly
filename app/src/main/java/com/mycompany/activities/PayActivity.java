@@ -63,12 +63,14 @@ public class PayActivity extends AppCompatActivity {
     public int idPlayer(String name){
         if(name.equals(getString(R.string.bank)))
             return -1;
+        if(name.equals(getString(R.string.everybody)))
+            return -2;
         Set<Integer> set = ticket.getPlayers().keySet();
         for (Integer i : set ) {
             if(ticket.getPlayers().get(i).getName().equals(name))
                 return i;
         }
-        return -2;
+        return -3;
     }
 
     public void setupSpinner(){
@@ -77,6 +79,8 @@ public class PayActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String namePlayer = parent.getItemAtPosition(position).toString();
                 playerTo = idPlayer(namePlayer);
+                if(playerTo == -2)
+                    value = value * (ticket.getPlayers().size() - 1);
             }
 
             @Override
@@ -86,6 +90,8 @@ public class PayActivity extends AppCompatActivity {
         List<String> players = new ArrayList<>();
         Set<Integer> set = ticket.getPlayers().keySet();
         players.add(getString(R.string.bank));
+        if(set.size() > 2)
+            players.add(getString(R.string.everybody));
         for(Integer i : set){
             if(!player.getName().equals(ticket.getPlayers().get(i).getName()))
                 players.add(ticket.getPlayers().get(i).getName());
@@ -100,13 +106,22 @@ public class PayActivity extends AppCompatActivity {
         payButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showProgress(getString(R.string.payingMessage),true);
-                SendPayTask st = new SendPayTask();
-                ObjectRequest obj = new ObjectRequest();
-                obj.setOperation(1);
-                obj.setValue(value);
-                obj.setToPlayer(playerTo);
-                st.execute(obj);
+                if(playerTo == -2 && value > player.getMoney())
+                    showMessage(getString(R.string.error),getString(R.string.error_not_funds));
+                else {
+                    showProgress(getString(R.string.payingMessage), true);
+                    SendPayTask st = new SendPayTask();
+                    ObjectRequest obj = new ObjectRequest();
+                    obj.setOperation(1);
+                    obj.setValue(value);
+                    if(playerTo == -2) {
+                        // operation = id*100 -2 it's helpful to identify the source player
+                        // when the type of payment is broadcast
+                        obj.setToPlayer( (idPlayer(player.getName())*100) - 2 );
+                    }else
+                        obj.setToPlayer(playerTo);
+                    st.execute(obj);
+                }
             }
         });
     }

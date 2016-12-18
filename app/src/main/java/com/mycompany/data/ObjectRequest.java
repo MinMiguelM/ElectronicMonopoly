@@ -19,6 +19,7 @@ public class ObjectRequest implements Serializable {
     /**
      * id from the map
      * Bank is id = -1
+     * Everybody = -2
      */
     private int toPlayer;
     private int value;
