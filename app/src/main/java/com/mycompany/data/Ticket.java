@@ -1,9 +1,7 @@
 package com.mycompany.data;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,11 +12,13 @@ public class Ticket implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Map<Integer,Player> players;
-    private List<Property> properties;
+    private Map<Integer,Property> propertiesAvailable;
+    private Map<Integer,Property> propertiesSold;
 
     public Ticket(){
         players = new HashMap<>();
-        properties = new ArrayList<>();
+        propertiesAvailable = new HashMap<>();
+        propertiesSold = new HashMap<>();
     }
 
     public Map<Integer, Player> getPlayers() {
@@ -29,11 +29,19 @@ public class Ticket implements Serializable {
         this.players = players;
     }
 
-    public List<Property> getProperties() {
-        return properties;
+    public Map<Integer, Property> getPropertiesAvailable() {
+        return propertiesAvailable;
     }
 
-    public void setProperties(List<Property> properties) {
-        this.properties = properties;
+    public void setPropertiesAvailable(Map<Integer, Property> propertiesAvailable) {
+        this.propertiesAvailable = propertiesAvailable;
+    }
+
+    public Map<Integer, Property> getPropertiesSold() {
+        return propertiesSold;
+    }
+
+    public void setPropertiesSold(Map<Integer, Property> propertiesSold) {
+        this.propertiesSold = propertiesSold;
     }
 }

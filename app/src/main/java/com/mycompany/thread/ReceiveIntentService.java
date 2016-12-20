@@ -53,7 +53,7 @@ public class ReceiveIntentService extends IntentService {
     public void typeMessage(ObjectRequest obj, Socket client) throws IOException {
         switch (obj.getOperation()){
             case 2:
-                price = obj.getValue();
+                price = Integer.parseInt(obj.getValue());
                 Handler handler2 = new Handler(Looper.getMainLooper());
                 handler2.post(new Runnable() {
                     @Override
@@ -84,6 +84,27 @@ public class ReceiveIntentService extends IntentService {
                         Message msg1 = Message.obtain();
 
                         msg1.what = 3;
+                        msg1.obj = object;
+
+                        try {
+                            msg.send(msg1);
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                break;
+            case 6:
+                this.object = obj;
+                Handler handler6 = new Handler(Looper.getMainLooper());
+                handler6.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        // run this code in the main thread
+                        Messenger msg = (Messenger) intent.getExtras().get("handler");
+                        Message msg1 = Message.obtain();
+
+                        msg1.what = 6;
                         msg1.obj = object;
 
                         try {

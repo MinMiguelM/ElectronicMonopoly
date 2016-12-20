@@ -14,6 +14,7 @@
     <!-- Info Messages -->
     <string name="joiningMessage">Joining...</string>
     <string name="payingMessage">Paying...</string>
+    <string name="waitingMessage">Waiting...</string>
 
     <!-- Error Messages -->
     <string name="field_required">Field is required</string>
@@ -22,6 +23,8 @@
     <string name="error_not_funds">Not funds</string>
     <string name="error_restart">Sorry, but you have to restart the App.</string>
     <string name="error_sending">Error sending, try again.</string>
+    <string name="error_no_properties">There are not properties to do this operation.</string>
+    <string name="error_transaction">Transaction has not been approved.</string>
 
     <!-- Constants -->
     <string name="bank">Bank</string>

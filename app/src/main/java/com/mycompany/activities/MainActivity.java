@@ -1,8 +1,12 @@
 package com.mycompany.activities;
 
+import android.annotation.TargetApi;
 import android.app.ActivityManager;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -21,6 +25,9 @@ import com.mycompany.data.Ticket;
 import com.mycompany.electronicmonopoly.R;
 import com.mycompany.thread.ReceiveIntentService;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
@@ -29,12 +36,14 @@ public class MainActivity extends AppCompatActivity {
     private String host;
     private Player player;
     private Handler myHandler;
+    private int port = 334;
 
     private TextView currentMoney;
     private Button buyButton;
     private Button repaymentButton;
     private Button payButton;
     private EditText inputText;
+    private ProgressDialog progress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +77,9 @@ public class MainActivity extends AppCompatActivity {
                             break;
                         case 3:
                             gameover((ObjectRequest)msg.obj);
+                            break;
+                        case 6:
+                            ticket = (Ticket) ((ObjectRequest)msg.obj).getObject();
                             break;
                         default:
                             break;
@@ -150,6 +162,8 @@ public class MainActivity extends AppCompatActivity {
     public void onNewIntent(Intent intent){
         player = (Player) intent.getExtras().getSerializable("player");
         currentMoney.setText(player.getMoney()+"");
+        if(intent.getExtras().containsKey("ticket"))
+            ticket = (Ticket) intent.getExtras().getSerializable("ticket");
     }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
@@ -184,21 +198,27 @@ public class MainActivity extends AppCompatActivity {
         buyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                View focus = null;
                 if( TextUtils.isEmpty(inputText.getText().toString())) {
                     Intent intent = new Intent(MainActivity.this, ShowerActivity.class);
                     intent.putExtra("ticket", ticket);
                     intent.putExtra("player", player);
                     intent.putExtra("option", 0);
+                    intent.putExtra("host",host);
                     startActivity(intent);
                 }else{
+                    showProgress(getString(R.string.waitingMessage),true);
                     int value = Integer.parseInt(inputText.getText().toString());
                     if(value > getCurrentMoney())
                         showMessage(getString(R.string.error),getString(R.string.error_not_funds));
-                    else
-                        setCurrentMoney((getCurrentMoney()-value)+"");
-                    focus = currentMoney;
-                    focus.requestFocus();
+                    else {
+                        setCurrentMoney((getCurrentMoney() - value) + "");
+                        ObjectRequest obj = new ObjectRequest();
+                        obj.setOperation(4);
+                        obj.setObject(null);
+                        obj.setFromPlayer(idPlayer(player.getName()));
+                        SendTask st = new SendTask(value, 0);
+                        st.execute(obj);
+                    }
                 }
                 inputText.setText("");
             }
@@ -214,17 +234,79 @@ public class MainActivity extends AppCompatActivity {
                     Intent intent = new Intent(MainActivity.this, ShowerActivity.class);
                     intent.putExtra("ticket", ticket);
                     intent.putExtra("player", player);
+                    intent.putExtra("host",host);
                     intent.putExtra("option", 1);
                     startActivity(intent);
                 }else{
+                    showProgress(getString(R.string.waitingMessage),true);
                     int value = Integer.parseInt(inputText.getText().toString());
                     value -= (value*0.1);
-                    setCurrentMoney((getCurrentMoney()+value)+"");
-                    focus = currentMoney;
-                    focus.requestFocus();
+                    SendTask st = new SendTask(value,1);
+                    ObjectRequest obj = new ObjectRequest();
+                    obj.setOperation(5);
+                    obj.setObject(null);
+                    obj.setFromPlayer(idPlayer(player.getName()));
+                    st.execute(obj);
                 }
                 inputText.setText("");
             }
         });
+    }
+
+    /**
+     * show the progress of the current task
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    public void showProgress(String message, boolean show){
+        if(!show)
+            progress.dismiss();
+        else
+            progress = ProgressDialog.show(this, null, message, true);
+    }
+
+    private class SendTask extends AsyncTask<ObjectRequest,Void,Boolean> {
+
+        private ObjectRequest responseG;
+        private int value;
+        private int operation;
+
+        public SendTask(int value,int operation){
+            this.value = value;
+            this.operation = operation;
+        }
+
+        @Override
+        protected Boolean doInBackground(ObjectRequest... params) {
+            try{
+                Socket socket = new Socket(host,port);
+                ObjectOutputStream bufferOut = new ObjectOutputStream(socket.getOutputStream());
+                params[0].setValue(value+"");
+                bufferOut.writeObject(params[0]);
+                if(operation == 1) {
+                    ObjectInputStream bufferIn = new ObjectInputStream(socket.getInputStream());
+                    ObjectRequest response = (ObjectRequest) bufferIn.readObject();
+                    responseG = response;
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public void onPostExecute(final Boolean success){
+            showProgress(null,false);
+            if(success && operation == 1){
+                //showProgress(null,false);
+                if((boolean) responseG.getObject())
+                    setCurrentMoney((getCurrentMoney()+value)+"");
+                else
+                    showMessage(getString(R.string.error),getString(R.string.error_transaction));
+            }else if(!success) {
+                //showProgress(null,false);
+                showMessage(getString(R.string.error), getString(R.string.error_sending));
+            }
+        }
     }
 }

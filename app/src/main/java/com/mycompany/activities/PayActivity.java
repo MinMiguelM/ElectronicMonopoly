@@ -113,13 +113,9 @@ public class PayActivity extends AppCompatActivity {
                     SendPayTask st = new SendPayTask();
                     ObjectRequest obj = new ObjectRequest();
                     obj.setOperation(1);
-                    obj.setValue(value);
-                    if(playerTo == -2) {
-                        // operation = id*100 -2 it's helpful to identify the source player
-                        // when the type of payment is broadcast
-                        obj.setToPlayer( (idPlayer(player.getName())*100) - 2 );
-                    }else
-                        obj.setToPlayer(playerTo);
+                    obj.setValue(value+"");
+                    obj.setFromPlayer( idPlayer(player.getName()) );
+                    obj.setToPlayer(playerTo);
                     st.execute(obj);
                 }
             }
@@ -170,6 +166,7 @@ public class PayActivity extends AppCompatActivity {
                 Intent intent = new Intent(PayActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 intent.putExtra("player", player);
+                intent.putExtra("ticket",ticket);
                 startActivity(intent);
             }else
                 showMessage(getString(R.string.error),getString(R.string.error_sending));

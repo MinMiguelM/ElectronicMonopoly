@@ -12,6 +12,15 @@ public class Player implements Serializable {
     private String name;
     private String ip;
     private Integer money;
+    private int prison;
+
+    public int getPrison() {
+        return prison;
+    }
+
+    public void setPrison(int prison) {
+        this.prison = prison;
+    }
 
     public Integer getMoney() {
         return money;
