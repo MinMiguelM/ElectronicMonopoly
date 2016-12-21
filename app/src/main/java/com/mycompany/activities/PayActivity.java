@@ -6,6 +6,11 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -34,6 +39,7 @@ public class PayActivity extends AppCompatActivity {
     private Player player;
     private int playerTo;
     private Ticket ticket;
+    private Messenger msg;
 
     private Button payButton;
     private TextView valueView;
@@ -49,6 +55,7 @@ public class PayActivity extends AppCompatActivity {
         value = getIntent().getExtras().getInt("value");
         player = (Player) getIntent().getExtras().getSerializable("player");
         ticket = (Ticket) getIntent().getExtras().getSerializable("ticket");
+        msg = (Messenger) getIntent().getExtras().get("handler");
 
         valueView = (TextView) findViewById(R.id.value);
         valueView.setText(value+"");
@@ -145,6 +152,12 @@ public class PayActivity extends AppCompatActivity {
 
     private class SendPayTask extends AsyncTask<ObjectRequest,Void,Boolean>{
 
+        private Handler handler;
+
+        public SendPayTask(){
+            handler = new Handler(Looper.getMainLooper());
+        }
+
         @Override
         protected Boolean doInBackground(ObjectRequest... params) {
             try{
@@ -162,11 +175,22 @@ public class PayActivity extends AppCompatActivity {
         public void onPostExecute(final Boolean success){
             showProgress(null,false);
             if(success){
-                player.setMoney(player.getMoney() - value);
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Message msg1 = Message.obtain();
+                        msg1.what = 2;
+                        msg1.obj = -1*value;
+
+                        try {
+                            msg.send(msg1);
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
                 Intent intent = new Intent(PayActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                intent.putExtra("player", player);
-                intent.putExtra("ticket",ticket);
                 startActivity(intent);
             }else
                 showMessage(getString(R.string.error),getString(R.string.error_sending));

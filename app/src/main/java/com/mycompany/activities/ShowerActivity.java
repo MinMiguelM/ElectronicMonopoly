@@ -6,6 +6,11 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -26,9 +31,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class ShowerActivity extends AppCompatActivity {
@@ -37,6 +40,7 @@ public class ShowerActivity extends AppCompatActivity {
     private TextView priceView;
     private Button buyButton;
     private ProgressDialog progress;
+    private Messenger msg;
 
     private Property property;
     private Ticket ticket;
@@ -59,6 +63,7 @@ public class ShowerActivity extends AppCompatActivity {
         player = (Player) getIntent().getExtras().getSerializable("player");
         option = getIntent().getExtras().getInt("option");
         host = getIntent().getExtras().getString("host");
+        msg = (Messenger) getIntent().getExtras().get("handler");
 
         priceView = (TextView) findViewById(R.id.price);
         spinnerProperties = (Spinner) findViewById(R.id.propertiesSpinner);
@@ -129,19 +134,17 @@ public class ShowerActivity extends AppCompatActivity {
                         obj.setObject(ticket);
                         obj.setValue(property.getName());
                         obj.setFromPlayer(idPlayer(player.getName()));
-                        SendTask st = new SendTask();
+                        SendTask st = new SendTask(value);
                         st.execute(obj);
                     } else {
                         if (currentMoney >= value) {
                             showProgress(getString(R.string.waitingMessage),true);
-                            player.setMoney(currentMoney - value);
-                            deleteProperty(property.getName());
                             ObjectRequest obj = new ObjectRequest();
                             obj.setOperation(4);
                             obj.setObject(ticket);
                             obj.setValue(property.getName());
                             obj.setFromPlayer(idPlayer(player.getName()));
-                            SendTask st = new SendTask();
+                            SendTask st = new SendTask(value);
                             st.execute(obj);
                         } else {
                             showMessage(getString(R.string.error), getString(R.string.error_not_funds));
@@ -160,17 +163,6 @@ public class ShowerActivity extends AppCompatActivity {
                 return i;
         }
         return -1;
-    }
-
-    public void deleteProperty(String name){
-        Map<Integer,Property> map = new HashMap<>(ticket.getPropertiesAvailable());
-        Set<Integer> set = map.keySet();
-        for(Integer i : set) {
-            if (map.get(i).getName().equals(name)) {
-                ticket.getPropertiesSold().put(i, map.get(i));
-                ticket.getPropertiesAvailable().remove(i);
-            }
-        }
     }
 
     public Property getProperty(String name){
@@ -202,9 +194,11 @@ public class ShowerActivity extends AppCompatActivity {
 
         private ObjectRequest responseG;
         private int value;
+        private Handler handler;
 
-        public SendTask(){
-            value = property.getValue();
+        public SendTask(int value){
+            this.value = value;
+            handler = new Handler(Looper.getMainLooper());
         }
 
         @Override
@@ -230,18 +224,42 @@ public class ShowerActivity extends AppCompatActivity {
             if(success && option == 1){
                 if((boolean)responseG.getObject()){
                     value -= value * 0.1;
-                    player.setMoney(player.getMoney() + value);
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Message msg1 = Message.obtain();
+                            msg1.what = 2;
+                            msg1.obj = value;
+
+                            try {
+                                msg.send(msg1);
+                            } catch (RemoteException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
                     Intent intent = new Intent(ShowerActivity.this, MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    intent.putExtra("player", player);
                     startActivity(intent);
                 }else
                     showMessage(getString(R.string.error),getString(R.string.error_transaction));
             }else if(success && option == 0){
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Message msg1 = Message.obtain();
+                        msg1.what = 2;
+                        msg1.obj = -1*value;
+
+                        try {
+                            msg.send(msg1);
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
                 Intent intent = new Intent(ShowerActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                intent.putExtra("player", player);
-                intent.putExtra("ticket",ticket);
                 startActivity(intent);
             } else if(!success)
                 showMessage(getString(R.string.error),getString(R.string.error_sending));

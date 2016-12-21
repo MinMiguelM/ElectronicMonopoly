@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
                             gameover((ObjectRequest)msg.obj);
                             break;
                         case 6:
-                            ticket = (Ticket) ((ObjectRequest)msg.obj).getObject();
+                            setTicket((Ticket) ((ObjectRequest)msg.obj).getObject());
                             break;
                         default:
                             break;
@@ -150,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
                         intent.putExtra("value",value);
                         intent.putExtra("player",player);
                         intent.putExtra("ticket",ticket);
+                        intent.putExtra("handler",new Messenger(myHandler));
                         startActivity(intent);
                     }
                 }
@@ -158,12 +159,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void setTicket(Ticket ticket){
+        this.ticket = ticket;
+    }
+
     @Override
     public void onNewIntent(Intent intent){
-        player = (Player) intent.getExtras().getSerializable("player");
-        currentMoney.setText(player.getMoney()+"");
-        if(intent.getExtras().containsKey("ticket"))
-            ticket = (Ticket) intent.getExtras().getSerializable("ticket");
     }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
@@ -186,8 +187,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setCurrentMoney(String text){
-        currentMoney.setText(text);
         player.setMoney(Integer.parseInt(text));
+        currentMoney.setText(text);
     }
 
     public Integer getCurrentMoney(){
@@ -204,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra("player", player);
                     intent.putExtra("option", 0);
                     intent.putExtra("host",host);
+                    intent.putExtra("handler",new Messenger(myHandler));
                     startActivity(intent);
                 }else{
                     showProgress(getString(R.string.waitingMessage),true);
@@ -236,6 +238,7 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra("player", player);
                     intent.putExtra("host",host);
                     intent.putExtra("option", 1);
+                    intent.putExtra("handler",new Messenger(myHandler));
                     startActivity(intent);
                 }else{
                     showProgress(getString(R.string.waitingMessage),true);
