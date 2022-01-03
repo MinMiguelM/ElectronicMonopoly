@@ -208,11 +208,11 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra("handler",new Messenger(myHandler));
                     startActivity(intent);
                 }else{
-                    showProgress(getString(R.string.waitingMessage),true);
                     int value = Integer.parseInt(inputText.getText().toString());
-                    if(value > getCurrentMoney())
+                    if(value > getCurrentMoney()) {
                         showMessage(getString(R.string.error),getString(R.string.error_not_funds));
-                    else {
+                    } else {
+                        showProgress(getString(R.string.waitingMessage),true);
                         setCurrentMoney((getCurrentMoney() - value) + "");
                         ObjectRequest obj = new ObjectRequest();
                         obj.setOperation(4);
